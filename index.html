@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>تحكم متابعة المشاريع</title>
+<meta name="theme-color" content="#0F2A43">
+<meta name="description" content="التحكم عن بعد في أداة متابعة المشاريع - Created by Planner Ahmed Ghazy">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0B2136; --panel:#123251; --panel2:#18406A; --line:#24527F; --ink:#F2F6FA; --mute:#9DB3C9;
+  --gold:#E8A317; --gold-ink:#1B1406; --ok:#2FB57A; --ok-bg:rgba(47,181,122,.14); --bad:#E5534B; --bad-bg:rgba(229,83,75,.14);
+  --warn:#F0B23C; --warn-bg:rgba(240,178,60,.14); --r:14px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Cairo",system-ui,"Segoe UI",Tahoma,sans-serif;font-size:16px;line-height:1.5}
+body{min-height:100vh;padding-bottom:env(safe-area-inset-bottom)}
+button,input,textarea{font:inherit;color:inherit}
+.wrap{max-width:560px;margin:0 auto;padding:16px 16px 120px}
+header.top{position:sticky;top:0;z-index:5;background:linear-gradient(180deg,var(--bg) 70%,rgba(11,33,54,0));padding:14px 16px 10px;display:flex;align-items:center;gap:10px;max-width:560px;margin:0 auto}
+header.top .t{flex:1}
+header.top h1{font-size:19px;margin:0;font-weight:800}
+header.top .s{font-size:12px;color:var(--mute)}
+.ib{width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--panel);display:grid;place-items:center;cursor:pointer}
+.ib svg{width:22px;height:22px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:14px}
+.card h2{font-size:15px;margin:0 0 10px;color:var(--mute);font-weight:700}
+.status{display:flex;align-items:center;gap:14px}
+.dot{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;flex:none}
+.dot svg{width:28px;height:28px}
+.st-on .dot{background:var(--ok-bg);color:var(--ok)} .st-off .dot{background:var(--bad-bg);color:var(--bad)} .st-exp .dot{background:var(--warn-bg);color:var(--warn)}
+.status .big{font-size:22px;font-weight:800}
+.status .sub{font-size:13px;color:var(--mute)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);font-weight:700;cursor:pointer;padding:10px 14px}
+.btn.gold{background:var(--gold);color:var(--gold-ink);border-color:var(--gold)}
+.btn.red{background:var(--bad);border-color:var(--bad);color:#fff}
+.btn.green{background:var(--ok);border-color:var(--ok);color:#fff}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.mt{margin-top:10px}
+label.f{display:block;font-size:13px;color:var(--mute);margin:12px 0 6px}
+input.i,textarea.i{width:100%;background:#0E2740;border:1px solid var(--line);border-radius:10px;padding:12px;outline:none}
+input.i:focus,textarea.i:focus{border-color:var(--gold)}
+textarea.i{min-height:70px;resize:vertical}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--panel2);border-radius:999px;padding:9px 16px;cursor:pointer;font-weight:600}
+.chip.on{background:var(--gold);color:var(--gold-ink);border-color:var(--gold)}
+.user{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.user:first-of-type{border-top:0}
+.av{width:40px;height:40px;border-radius:50%;background:var(--panel2);display:grid;place-items:center;font-weight:800;flex:none}
+.user .n{font-weight:700}
+.badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+.b{font-size:12px;padding:1px 9px;border-radius:999px;font-weight:700}
+.b.ok{background:var(--ok-bg);color:var(--ok)}.b.bad{background:var(--bad-bg);color:var(--bad)}.b.warn{background:var(--warn-bg);color:var(--warn)}.b.adm{background:rgba(232,163,23,.16);color:var(--gold)}
+.user .u{font-size:12px;color:var(--mute);margin-top:2px}
+.acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.acts button{border:1px solid var(--line);background:var(--panel2);border-radius:9px;padding:6px 11px;font-size:13px;font-weight:600;cursor:pointer}
+.acts button.r{color:#ffb3ae}
+.grow{flex:1;min-width:0}
+.pub{position:fixed;bottom:0;left:0;right:0;z-index:8;background:rgba(11,33,54,.96);border-top:1px solid var(--line);padding:12px 16px calc(12px + env(safe-area-inset-bottom));display:none}
+.pub.on{display:block}
+.pub .in{max-width:560px;margin:0 auto;display:flex;gap:10px;align-items:center}
+.pub .cnt{font-size:13px;color:var(--mute);flex:1}
+.banner{border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:14px}
+.banner.warn{background:var(--warn-bg);border:1px solid rgba(240,178,60,.4)}
+.banner.bad{background:var(--bad-bg);border:1px solid rgba(229,83,75,.4)}
+.banner.info{background:rgba(120,170,220,.10);border:1px solid var(--line)}
+.code{font-family:ui-monospace,Consolas,monospace;font-size:11px;direction:ltr;text-align:left;word-break:break-all;background:#0E2740;border:1px solid var(--line);border-radius:10px;padding:10px;max-height:110px;overflow:auto}
+.center{min-height:80vh;display:flex;flex-direction:column;justify-content:center}
+.logo{width:76px;height:76px;border-radius:20px;margin:0 auto 14px;display:block}
+.ttl{text-align:center;font-size:22px;font-weight:800;margin:0}
+.muted{color:var(--mute);font-size:13px}
+.tc{text-align:center}
+.foot{text-align:center;color:#6F88A2;font-size:11px;margin-top:22px}
+.err{color:#ff9f98;font-size:13px;min-height:20px;margin-top:8px}
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:20;display:none;align-items:flex-end;justify-content:center}
+.sheet-bg.on{display:flex}
+.sheet{background:var(--panel);border:1px solid var(--line);border-bottom:0;border-radius:20px 20px 0 0;width:100%;max-width:560px;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto}
+.sheet h3{margin:0 0 4px;font-size:18px}
+.toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:30;background:#0E2740;border:1px solid var(--gold);padding:10px 16px;border-radius:12px;font-size:14px;max-width:92vw;display:none;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.toast.on{display:block}
+.spin{width:22px;height:22px;border:3px solid rgba(255,255,255,.25);border-top-color:var(--gold);border-radius:50%;animation:sp 0.8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.hidden{display:none!important}
+.steps{margin:0;padding-inline-start:20px;font-size:14px}
+.steps li{margin-bottom:6px}
+a{color:var(--gold)}
+</style>
+</head>
+<body>
+
+<!-- ======================= first run ======================= -->
+<section id="vSetup" class="wrap center hidden">
+  <img class="logo" src="icon-192.png" alt="">
+  <p class="ttl">تحكم متابعة المشاريع</p>
+  <p class="muted tc">إعداد لأول مرة: كلمة مرور خاصة بهذا التطبيق. تحمي مفتاح التوقيع ورمز GitHub المحفوظين على هذا الهاتف فقط.</p>
+  <div class="card mt">
+    <label class="f" for="sp1">كلمة مرور التطبيق (8 أحرف على الأقل)</label>
+    <input class="i" id="sp1" type="password" autocomplete="new-password">
+    <label class="f" for="sp2">تأكيد كلمة المرور</label>
+    <input class="i" id="sp2" type="password" autocomplete="new-password">
+    <div class="err" id="spErr"></div>
+    <button class="btn gold mt" id="spGo">إنشاء مفتاح الهاتف</button>
+    <button class="btn ghost mt" id="spRestore">استعادة من نسخة احتياطية</button>
+  </div>
+  <p class="foot">Created by Planner Ahmed Ghazy</p>
+</section>
+
+<!-- ======================= lock ======================= -->
+<section id="vLock" class="wrap center hidden">
+  <img class="logo" src="icon-192.png" alt="">
+  <p class="ttl">تحكم متابعة المشاريع</p>
+  <p class="muted tc">للمسؤول فقط</p>
+  <div class="card mt">
+    <label class="f" for="lp">كلمة مرور التطبيق</label>
+    <input class="i" id="lp" type="password" autocomplete="current-password">
+    <div class="err" id="lpErr"></div>
+    <button class="btn gold mt" id="lpGo">فتح</button>
+  </div>
+  <p class="foot">Created by Planner Ahmed Ghazy</p>
+</section>
+
+<!-- ======================= main ======================= -->
+<div id="vMain" class="hidden">
+  <header class="top">
+    <img src="icon-192.png" alt="" style="width:38px;height:38px;border-radius:10px">
+    <div class="t"><h1>تحكم متابعة المشاريع</h1><div class="s" id="hSub">—</div></div>
+    <button class="ib" id="bReload" aria-label="تحديث"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg></button>
+    <button class="ib" id="bSettings" aria-label="الإعدادات"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  </header>
+  <main class="wrap" style="padding-top:4px">
+    <div id="banners"></div>
+    <div id="loading" class="card tc hidden"><div class="spin" style="margin:6px auto"></div><div class="muted">جارٍ قراءة ملف التحكم…</div></div>
+
+    <div id="homeBody" class="hidden">
+      <div class="card" id="stCard">
+        <div class="status" id="stBox">
+          <div class="dot" id="stDot"></div>
+          <div class="grow"><div class="big" id="stBig">—</div><div class="sub" id="stSub"></div></div>
+        </div>
+        <div class="row mt">
+          <button class="btn red" id="bStop">إيقاف الأداة فوراً</button>
+          <button class="btn green hidden" id="bStart">تشغيل الأداة</button>
+        </div>
+        <button class="btn mt" id="bDur">مدة تشغيل الأداة…</button>
+      </div>
+
+      <div class="card">
+        <h2>رسالة تظهر للمستخدمين عند الإيقاف</h2>
+        <textarea class="i" id="msg" placeholder="مثال: الأداة متوقفة مؤقتاً للصيانة"></textarea>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <h2 style="margin:0;flex:1">المستخدمون <span id="uCount"></span></h2>
+          <button class="chip" id="bAddUser">+ إضافة مستخدم</button>
+        </div>
+        <div id="users"></div>
+      </div>
+      <p class="muted tc">آخر نشر: <span id="lastIssued">—</span><br>تصل التغييرات لأجهزة المستخدمين خلال 20 دقيقة تقريباً (عند اتصالهم بالإنترنت).</p>
+      <p class="foot">Created by Planner Ahmed Ghazy</p>
+    </div>
+  </main>
+  <div class="pub" id="pubBar"><div class="in">
+    <div class="cnt" id="pubCnt"></div>
+    <button class="btn ghost" style="width:auto;min-height:44px" id="bUndo">تراجع</button>
+    <button class="btn gold" style="width:auto;min-height:44px;padding:0 22px" id="bPublish">حفظ ونشر</button>
+  </div></div>
+</div>
+
+<!-- ======================= settings ======================= -->
+<section id="vSettings" class="hidden">
+  <header class="top">
+    <button class="ib" id="bBack" aria-label="رجوع"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
+    <div class="t"><h1>الإعدادات</h1><div class="s">الربط مع الأداة و GitHub</div></div>
+  </header>
+  <div class="wrap" style="padding-top:4px">
+    <div class="card">
+      <h2>1) رمز ربط الهاتف</h2>
+      <p class="muted" style="margin-top:0">في الأداة على جهاز المسؤول: «لوحة المسؤول» ← «ربط الهاتف» ← الصق هذا الرمز ← «حفظ ونشر».</p>
+      <div class="code" id="pairCode"></div>
+      <div class="row mt"><button class="btn" id="bCopyPair">نسخ</button><button class="btn" id="bSharePair">مشاركة</button></div>
+    </div>
+    <div class="card">
+      <h2>2) GitHub</h2>
+      <label class="f" for="tok">رمز الوصول (Personal access token – صلاحية gist فقط)</label>
+      <input class="i" id="tok" type="password" autocomplete="off" dir="ltr">
+      <label class="f" for="gid">رقم الـ Gist (يظهر في لوحة المسؤول بعد «حفظ ونشر»)</label>
+      <input class="i" id="gid" type="text" autocomplete="off" dir="ltr">
+      <div class="err" id="ghErr"></div>
+      <button class="btn gold mt" id="bSaveGh">حفظ واختبار</button>
+    </div>
+    <div class="card">
+      <h2>الأمان</h2>
+      <button class="btn" id="bBackup">تنزيل نسخة احتياطية مشفرة</button>
+      <button class="btn mt" id="bChangePw">تغيير كلمة مرور التطبيق</button>
+      <button class="btn mt" id="bLockNow">قفل التطبيق الآن</button>
+      <button class="btn ghost mt" id="bWipe" style="color:#ffb3ae">حذف بيانات التطبيق من هذا الهاتف</button>
+      <p class="muted">النسخة الاحتياطية مشفرة بكلمة مرور التطبيق. احفظها في مكان آمن لاستعادة التحكم إذا ضاع الهاتف أو مُسحت بيانات المتصفح.</p>
+    </div>
+    <p class="foot">Created by Planner Ahmed Ghazy</p>
+  </div>
+</section>
+
+<div class="sheet-bg" id="sheetBg"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+<input type="file" id="fileIn" accept=".json,application/json,text/plain" class="hidden">
+
+<script src="core.js"></script>
+<script>
+(function () {
+  'use strict';
+  const P = window.PMCore;
+  const $ = (id) => document.getElementById(id);
+  const VAULT = 'pm_ctrl_vault';
+  let vault = null, pw = '', key = null;        // unlocked session
+  let base = null, w = null;                    // control file as read / working copy
+  let idleT = 0;
+
+  // ---------------------------------------------------------------- helpers
+  function store(get, val) {
+    try { if (get) return localStorage.getItem(VAULT); if (val === null) localStorage.removeItem(VAULT); else localStorage.setItem(VAULT, val); } catch (e) { return null; }
+  }
+  function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+  function show(id) { ['vSetup', 'vLock', 'vMain', 'vSettings'].forEach((v) => $(v).classList.toggle('hidden', v !== id)); window.scrollTo(0, 0); }
+  let toastT = 0;
+  function toast(t, ms) { const e = $('toast'); e.textContent = t; e.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => e.classList.remove('on'), ms || 3200); }
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  function until2txt(u) {
+    const d = P.parseUntil(u); if (!d) return '';
+    const s = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    return s;
+  }
+  function left(u) {
+    const d = P.parseUntil(u); if (!d) return '';
+    let ms = d - new Date(); if (ms <= 0) return 'انتهت';
+    const h = Math.floor(ms / 3600000), dd = Math.floor(h / 24);
+    if (dd >= 2) return 'باقي ' + dd + (dd <= 10 ? ' أيام' : ' يوماً');
+    if (dd === 1) return 'باقي يوم و' + (h - 24) + ' ساعة';
+    if (h >= 1) return 'باقي ' + h + ' ساعة';
+    return 'باقي ' + Math.max(1, Math.round(ms / 60000)) + ' دقيقة';
+  }
+  async function saveVault() { store(false, await P.seal(vault, pw)); }
+  function busy(btn, on, label) {
+    if (!btn) return;
+    if (on) { btn.dataset.l = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<span class="spin"></span>' + (label ? ' ' + label : ''); }
+    else { btn.disabled = false; if (btn.dataset.l) btn.innerHTML = btn.dataset.l; }
+  }
+
+  // ---------------------------------------------------------------- sheet (dialogs)
+  function sheet(html, onReady) {
+    $('sheet').innerHTML = html; $('sheetBg').classList.add('on');
+    if (onReady) onReady($('sheet'));
+  }
+  function closeSheet() { $('sheetBg').classList.remove('on'); $('sheet').innerHTML = ''; }
+  $('sheetBg').addEventListener('click', (e) => { if (e.target === $('sheetBg')) closeSheet(); });
+  function confirmBox(title, text, okLabel, danger) {
+    return new Promise((res) => {
+      sheet('<h3>' + esc(title) + '</h3><p class="muted">' + text + '</p><div class="row mt"><button class="btn" id="cNo">إلغاء</button><button class="btn ' + (danger ? 'red' : 'gold') + '" id="cOk">' + esc(okLabel || 'موافق') + '</button></div>', (s) => {
+        s.querySelector('#cNo').onclick = () => { closeSheet(); res(false); };
+        s.querySelector('#cOk').onclick = () => { closeSheet(); res(true); };
+      });
+    });
+  }
+  // duration picker -> '' (no limit) | 'yyyy-MM-ddTHH:mm:ss' | null (cancel)
+  function pickDuration(title, cur) {
+    return new Promise((res) => {
+      const opts = [[1, 'يوم'], [2, 'يومان'], [3, '3 أيام'], [7, 'أسبوع'], [14, 'أسبوعان'], [30, 'شهر'], [90, '3 أشهر']];
+      sheet('<h3>' + esc(title) + '</h3><p class="muted">' + (cur ? 'الحالي: حتى ' + esc(until2txt(cur)) + ' (' + esc(left(cur)) + ')' : 'الحالي: بلا حد') + '</p>' +
+        '<div class="chips">' + opts.map((o) => '<button class="chip" data-d="' + o[0] + '">' + o[1] + '</button>').join('') + '</div>' +
+        '<label class="f" for="dDate">أو حتى تاريخ ووقت محدد</label><input class="i" id="dDate" type="datetime-local" dir="ltr">' +
+        '<div class="row mt"><button class="btn" id="dNone">بلا حد</button><button class="btn gold" id="dOk">تطبيق التاريخ</button></div>' +
+        '<button class="btn ghost mt" id="dCancel">إلغاء</button>', (s) => {
+        s.querySelectorAll('.chip').forEach((b) => b.onclick = () => { closeSheet(); res(P.addDays(+b.dataset.d)); });
+        s.querySelector('#dNone').onclick = () => { closeSheet(); res(''); };
+        s.querySelector('#dCancel').onclick = () => { closeSheet(); res(null); };
+        s.querySelector('#dOk').onclick = () => {
+          const v = s.querySelector('#dDate').value;
+          const d = P.parseUntil(v.length === 16 ? v + ':00' : v);
+          if (!d || d <= new Date()) { toast('اختر تاريخاً ووقتاً في المستقبل'); return; }
+          closeSheet(); res(P.fmt(d));
+        };
+      });
+    });
+  }
+  function askPassword(title, who) {
+    return new Promise((res) => {
+      sheet('<h3>' + esc(title) + '</h3><p class="muted">' + esc(who) + '</p>' +
+        '<label class="f" for="np1">كلمة المرور (6 أحرف على الأقل)</label><input class="i" id="np1" type="password" autocomplete="new-password">' +
+        '<label class="f" for="np2">تأكيد كلمة المرور</label><input class="i" id="np2" type="password" autocomplete="new-password"><div class="err" id="npErr"></div>' +
+        '<div class="row mt"><button class="btn" id="npNo">إلغاء</button><button class="btn gold" id="npOk">حفظ</button></div>', (s) => {
+        s.querySelector('#npNo').onclick = () => { closeSheet(); res(null); };
+        s.querySelector('#npOk').onclick = () => {
+          const a = s.querySelector('#np1').value, b = s.querySelector('#np2').value;
+          if (a.length < 6) { s.querySelector('#npErr').textContent = 'كلمة المرور قصيرة: 6 أحرف على الأقل.'; return; }
+          if (a !== b) { s.querySelector('#npErr').textContent = 'كلمتا المرور غير متطابقتين.'; return; }
+          closeSheet(); res(a);
+        };
+        setTimeout(() => s.querySelector('#np1').focus(), 50);
+      });
+    });
+  }
+
+  // ---------------------------------------------------------------- first run / lock
+  $('spGo').onclick = async () => {
+    const a = $('sp1').value, b = $('sp2').value;
+    if (a.length < 8) { $('spErr').textContent = 'كلمة المرور قصيرة: 8 أحرف على الأقل.'; return; }
+    if (a !== b) { $('spErr').textContent = 'كلمتا المرور غير متطابقتين.'; return; }
+    busy($('spGo'), true, 'جارٍ إنشاء المفتاح…');
+    try {
+      const k = await P.newKey();
+      vault = { priv: k.priv, pub: k.pub, token: '', gist: '', created: P.fmt(new Date()) };
+      pw = a; await saveVault();
+      key = await P.importPriv(vault.priv);
+      try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) { }
+      openSettings(true);
+    } catch (e) { $('spErr').textContent = 'تعذر إنشاء المفتاح: ' + e.message; }
+    busy($('spGo'), false);
+  };
+  $('spRestore').onclick = () => $('fileIn').click();
+  $('fileIn').onchange = async (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    const t = await f.text(); e.target.value = '';
+    try { const o = JSON.parse(t); if (!o.ct || !o.salt) throw 0; } catch (x) { toast('ملف النسخة الاحتياطية غير صحيح'); return; }
+    if (store(true) && !(await confirmBox('استعادة', 'ستُستبدل بيانات التطبيق الحالية بالنسخة الاحتياطية.', 'استعادة', true))) return;
+    store(false, t); lock(); toast('تمت الاستعادة. افتح التطبيق بكلمة مرور النسخة الاحتياطية.');
+  };
+  $('lpGo').onclick = unlock;
+  $('lp').addEventListener('keydown', (e) => { if (e.key === 'Enter') unlock(); });
+  let fails = 0;
+  async function unlock() {
+    const t = $('lp').value; if (!t) return;
+    busy($('lpGo'), true);
+    try {
+      vault = await P.unseal(store(true), t); pw = t;
+      key = await P.importPriv(vault.priv);
+      $('lp').value = ''; $('lpErr').textContent = ''; fails = 0;
+      if (!vault.token || !vault.gist) openSettings(false); else { show('vMain'); load(); }
+    } catch (e) {
+      fails++;
+      $('lpErr').textContent = 'كلمة المرور غير صحيحة.' + (fails >= 3 ? ' (انتظر قليلاً)' : '');
+      if (fails >= 3) { $('lpGo').disabled = true; setTimeout(() => { $('lpGo').disabled = false; }, 15000 * (fails - 2)); }
+    }
+    busy($('lpGo'), false);
+  }
+  function lock() {
+    vault = null; pw = ''; key = null; base = null; w = null;
+    closeSheet(); $('pubBar').classList.remove('on');
+    show(store(true) ? 'vLock' : 'vSetup');
+    setTimeout(() => { const e = $('lp'); if (e && !$('vLock').classList.contains('hidden')) e.focus(); }, 80);
+  }
+  // locks itself after 5 minutes without touching the screen / in the background
+  function poke() { clearTimeout(idleT); if (vault) idleT = setTimeout(lock, 5 * 60000); }
+  ['pointerdown', 'keydown', 'scroll'].forEach((ev) => document.addEventListener(ev, poke, { passive: true }));
+  let hiddenAt = 0;
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) hiddenAt = Date.now();
+    else if (vault && hiddenAt && Date.now() - hiddenAt > 2 * 60000) lock();
+  });
+
+  // ---------------------------------------------------------------- settings
+  function openSettings(first) {
+    show('vSettings'); poke();
+    $('pairCode').textContent = P.pairingCode(vault.pub);
+    $('tok').value = vault.token || ''; $('gid').value = vault.gist || ''; $('ghErr').textContent = '';
+    $('bBack').classList.toggle('hidden', !vault.token || !vault.gist);
+    if (first) toast('تم إنشاء مفتاح الهاتف. أكمل الربط والإعدادات.', 4500);
+  }
+  $('bSettings').onclick = () => openSettings(false);
+  $('bBack').onclick = () => { show('vMain'); if (!base) load(); };
+  $('bCopyPair').onclick = async () => {
+    try { await navigator.clipboard.writeText(P.pairingCode(vault.pub)); toast('تم نسخ رمز الربط'); }
+    catch (e) { const r = document.createRange(); r.selectNodeContents($('pairCode')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast('حدد الرمز وانسخه'); }
+  };
+  $('bSharePair').onclick = async () => {
+    if (navigator.share) { try { await navigator.share({ title: 'رمز ربط الهاتف', text: P.pairingCode(vault.pub) }); } catch (e) { } }
+    else $('bCopyPair').click();
+  };
+  $('bSaveGh').onclick = async () => {
+    const tk = $('tok').value.trim(), gi = $('gid').value.trim().replace(/^.*\//, '');
+    $('ghErr').textContent = '';
+    if (!tk || !gi) { $('ghErr').textContent = 'اكتب رمز الوصول ورقم الـ Gist.'; return; }
+    busy($('bSaveGh'), true, 'جارٍ الاختبار…');
+    try {
+      const raw = await P.readGist(gi, tk);
+      const c = P.parseControl(raw); if (!c.ok) throw new Error(c.why);
+      vault.token = tk; vault.gist = gi; await saveVault();
+      toast('تم الاتصال بملف التحكم'); show('vMain'); load();
+    } catch (e) { $('ghErr').textContent = ghMsg(e); }
+    busy($('bSaveGh'), false);
+  };
+  function ghMsg(e) {
+    if (e.status === 401) return 'رمز الوصول غير صحيح أو منتهي الصلاحية.';
+    if (e.status === 404) return 'الـ Gist غير موجود، أو رمز الوصول بدون صلاحية gist.';
+    if (e.status === 403) return 'تم رفض الطلب من GitHub (الصلاحية أو حد الطلبات). أعد المحاولة بعد قليل.';
+    if (e instanceof TypeError) return 'تعذر الاتصال بالإنترنت.';
+    return e.message || String(e);
+  }
+  $('bBackup').onclick = () => {
+    const b = new Blob([store(true)], { type: 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'pm_control_backup_' + P.fmt(new Date()).slice(0, 10) + '.json';
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    toast('تم تنزيل النسخة الاحتياطية');
+  };
+  $('bChangePw').onclick = async () => {
+    const n = await askPassword('كلمة مرور التطبيق الجديدة', 'تُستخدم لفتح هذا التطبيق فقط');
+    if (!n) return;
+    if (n.length < 8) { toast('كلمة مرور التطبيق 8 أحرف على الأقل'); return; }
+    pw = n; await saveVault(); toast('تم تغيير كلمة مرور التطبيق. نزّل نسخة احتياطية جديدة.');
+  };
+  $('bLockNow').onclick = lock;
+  $('bWipe').onclick = async () => {
+    if (!(await confirmBox('حذف بيانات التطبيق', 'سيُحذف مفتاح الهاتف ورمز GitHub من هذا الهاتف. لن تستطيع التحكم في الأداة إلا باستعادة نسخة احتياطية أو بربط الهاتف من جديد.', 'حذف', true))) return;
+    store(false, null); lock();
+  };
+
+  // ---------------------------------------------------------------- read the control file
+  $('bReload').onclick = () => load();
+  async function load() {
+    poke();
+    $('loading').classList.remove('hidden'); $('homeBody').classList.add('hidden'); $('banners').innerHTML = '';
+    try {
+      const raw = await P.readGist(vault.gist, vault.token);
+      const c = P.parseControl(raw);
+      if (!c.ok) throw new Error('ملف التحكم غير صالح: ' + c.why);
+      base = c; w = clone(c);
+      render();
+      $('homeBody').classList.remove('hidden');
+    } catch (e) {
+      $('banners').innerHTML = '<div class="banner bad">تعذرت قراءة ملف التحكم: ' + esc(ghMsg(e)) + '<br><button class="btn mt" id="bRetry">إعادة المحاولة</button></div>';
+      $('bRetry').onclick = load;
+    }
+    $('loading').classList.add('hidden');
+  }
+  function paired() { return w && w.dkey === vault.pub; }
+
+  // ---------------------------------------------------------------- render
+  function effStatus(c) { if (c.status === 'disabled') return 'off'; if (P.expired(c.until)) return 'exp'; return 'on'; }
+  function render() {
+    const s = effStatus(w);
+    $('hSub').textContent = s === 'on' ? 'الأداة تعمل' : (s === 'off' ? 'الأداة متوقفة' : 'انتهت مدة التشغيل');
+    // banners
+    let bn = '';
+    if (!w.dkey) bn += '<div class="banner warn"><b>الهاتف غير مرتبط بعد.</b> انسخ «رمز الربط» من الإعدادات، والصقه في «لوحة المسؤول» ← «ربط الهاتف» على جهاز المسؤول، ثم «حفظ ونشر»، ثم اضغط تحديث هنا.</div>';
+    else if (!paired()) bn += '<div class="banner bad"><b>ملف التحكم مرتبط بهاتف آخر.</b> لن تقبل الأداة أوامر هذا الهاتف حتى تربطه من «لوحة المسؤول» ← «ربط الهاتف».</div>';
+    $('banners').innerHTML = bn;
+    const box = $('stCard');
+    box.className = 'card st-' + s;
+    $('stDot').innerHTML = s === 'on'
+      ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg>'
+      : (s === 'off' ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 3v9M6.3 6.8a8 8 0 1 0 11.4 0"/></svg>'
+        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>');
+    $('stBig').textContent = s === 'on' ? 'الأداة تعمل' : (s === 'off' ? 'الأداة متوقفة' : 'انتهت مدة التشغيل');
+    $('stSub').textContent = s === 'off' ? 'لكل المستخدمين (المسؤول يستمر في العمل لإعادة تشغيلها)' : w.until ? (s === 'exp' ? 'انتهت في ' + until2txt(w.until) : 'حتى ' + until2txt(w.until) + ' — ' + left(w.until)) : (s === 'off' ? 'لكل المستخدمين (المسؤول يستمر في العمل)' : 'بلا حد زمني');
+    $('bStop').classList.toggle('hidden', s !== 'on');
+    $('bStart').classList.toggle('hidden', s === 'on');
+    if (document.activeElement !== $('msg')) $('msg').value = w.message || '';
+    // users
+    $('uCount').textContent = '(' + w.users.length + ')';
+    const admins = w.users.filter((u) => u.role === 'admin' && u.active).length;
+    $('users').innerHTML = w.users.map((u, i) => {
+      const exp = u.active && P.expired(u.until);
+      const st = !u.active ? '<span class="b bad">موقوف</span>' : (exp ? '<span class="b warn">انتهت المدة</span>' : '<span class="b ok">مفعّل</span>');
+      const isAdm = u.role === 'admin';
+      const lastAdm = isAdm && u.active && admins <= 1;
+      return '<div class="user"><div class="av">' + esc((u.name || '?').trim().charAt(0).toUpperCase()) + '</div><div class="grow">' +
+        '<div class="n">' + esc(u.name) + '</div><div class="badges">' + st + (isAdm ? '<span class="b adm">مسؤول</span>' : '') + '</div>' +
+        '<div class="u">' + (isAdm ? 'المسؤول يعمل بلا حد زمني' : (u.until ? (exp ? 'انتهت في ' : 'مفعّل حتى ') + esc(until2txt(u.until)) + (exp ? '' : ' — ' + esc(left(u.until))) : 'بلا حد زمني')) + '</div>' +
+        '<div class="acts">' +
+        (lastAdm ? '' : '<button data-a="act" data-i="' + i + '">' + (u.active && !exp ? 'إيقاف' : 'تفعيل') + '</button>') +
+        (isAdm ? '' : '<button data-a="dur" data-i="' + i + '">مدة التفعيل</button>') +
+        '<button data-a="pwd" data-i="' + i + '">كلمة المرور</button>' +
+        (lastAdm ? '' : '<button class="r" data-a="del" data-i="' + i + '">حذف</button>') +
+        '</div></div></div>';
+    }).join('') || '<p class="muted">لا يوجد مستخدمون.</p>';
+    $('lastIssued').textContent = base.issued ? base.issued.replace('T', ' ') : '—';
+    pending();
+  }
+  function changes() {
+    if (!base || !w) return [];
+    const ch = [];
+    if (base.status !== w.status) ch.push(w.status === 'disabled' ? 'إيقاف الأداة' : 'تشغيل الأداة');
+    if ((base.until || '') !== (w.until || '')) ch.push(w.until ? 'مدة التشغيل حتى ' + until2txt(w.until) : 'تشغيل بلا حد');
+    if ((base.message || '') !== (w.message || '').replace(/[\r\n]+/g, ' ').trim()) ch.push('الرسالة');
+    const bm = {}; base.users.forEach((u) => bm[u.name.toLowerCase()] = u);
+    const wm = {}; w.users.forEach((u) => wm[u.name.toLowerCase()] = u);
+    w.users.forEach((u) => {
+      const o = bm[u.name.toLowerCase()];
+      if (!o) { ch.push('إضافة ' + u.name); return; }
+      if (o.active !== u.active) ch.push((u.active ? 'تفعيل ' : 'إيقاف ') + u.name);
+      if ((o.until || '') !== (u.until || '')) ch.push('مدة ' + u.name);
+      if (o.hash !== u.hash) ch.push('كلمة مرور ' + u.name);
+    });
+    base.users.forEach((u) => { if (!wm[u.name.toLowerCase()]) ch.push('حذف ' + u.name); });
+    return ch;
+  }
+  function pending() {
+    const ch = changes();
+    $('pubBar').classList.toggle('on', ch.length > 0);
+    $('pubCnt').textContent = ch.length ? ch.length + ' تغيير بانتظار النشر: ' + ch.slice(0, 3).join('، ') + (ch.length > 3 ? '…' : '') : '';
+  }
+
+  // ---------------------------------------------------------------- actions
+  $('msg').addEventListener('input', () => { w.message = $('msg').value; pending(); });
+  $('bStop').onclick = async () => {
+    if (!paired()) { toast('اربط الهاتف أولاً'); return; }
+    if (!(await confirmBox('إيقاف الأداة', 'ستتوقف الأداة عند كل المستخدمين خلال دقائق من اتصالهم بالإنترنت (المسؤول يستمر في العمل لإعادة تشغيلها).', 'إيقاف الآن', true))) return;
+    w.status = 'disabled'; w.message = $('msg').value; await publish(true);
+  };
+  $('bStart').onclick = async () => {
+    if (!paired()) { toast('اربط الهاتف أولاً'); return; }
+    const d = await pickDuration('تشغيل الأداة لمدة', '');
+    if (d === null) return;
+    w.status = 'enabled'; w.until = d; await publish(true);
+  };
+  $('bDur').onclick = async () => {
+    const d = await pickDuration('مدة تشغيل الأداة لكل المستخدمين', w.until);
+    if (d === null) return;
+    w.until = d; if (d) w.status = 'enabled'; render();
+  };
+  $('bAddUser').onclick = () => {
+    sheet('<h3>إضافة مستخدم</h3><label class="f" for="nuN">اسم المستخدم</label><input class="i" id="nuN" type="text" autocomplete="off">' +
+      '<label class="f" for="nuP">كلمة المرور (6 أحرف على الأقل)</label><input class="i" id="nuP" type="password" autocomplete="new-password">' +
+      '<div class="err" id="nuErr"></div><div class="row mt"><button class="btn" id="nuNo">إلغاء</button><button class="btn gold" id="nuOk">إضافة</button></div>', (s) => {
+      s.querySelector('#nuNo').onclick = closeSheet;
+      s.querySelector('#nuOk').onclick = async () => {
+        const n = s.querySelector('#nuN').value.trim().replace(/\|/g, ' '), p = s.querySelector('#nuP').value, er = s.querySelector('#nuErr');
+        if (!n) { er.textContent = 'اكتب اسم المستخدم.'; return; }
+        if (w.users.some((u) => u.name.toLowerCase() === n.toLowerCase())) { er.textContent = 'هذا الاسم موجود بالفعل.'; return; }
+        if (p.length < 6) { er.textContent = 'كلمة المرور قصيرة: 6 أحرف على الأقل.'; return; }
+        const salt = P.newSalt();
+        w.users.push({ name: n, role: 'user', active: true, salt: salt, hash: await P.hashPwd(p, salt), until: '' });
+        closeSheet(); render(); toast('أُضيف «' + n + '» — اضغط «حفظ ونشر»');
+      };
+      setTimeout(() => s.querySelector('#nuN').focus(), 50);
+    });
+  };
+  $('users').addEventListener('click', async (e) => {
+    const b = e.target.closest('button[data-a]'); if (!b) return;
+    const u = w.users[+b.dataset.i]; if (!u) return;
+    const a = b.dataset.a;
+    if (a === 'act') {
+      if (u.active && P.expired(u.until)) { const d = await pickDuration('تفعيل «' + u.name + '» لمدة', ''); if (d === null) return; u.until = d; }
+      else u.active = !u.active;
+    } else if (a === 'dur') {
+      const d = await pickDuration('مدة تفعيل «' + u.name + '»', u.until); if (d === null) return;
+      u.until = d; u.active = true;
+    } else if (a === 'pwd') {
+      const p = await askPassword('كلمة مرور جديدة', u.name); if (!p) return;
+      u.salt = P.newSalt(); u.hash = await P.hashPwd(p, u.salt); toast('تُطبق كلمة المرور بعد «حفظ ونشر»');
+    } else if (a === 'del') {
+      if (!(await confirmBox('حذف مستخدم', 'حذف «' + esc(u.name) + '» نهائياً من الأداة؟', 'حذف', true))) return;
+      w.users.splice(+b.dataset.i, 1);
+    }
+    render();
+  });
+  $('bUndo').onclick = () => { w = clone(base); render(); };
+  $('bPublish').onclick = () => publish(false);
+
+  // ---------------------------------------------------------------- publish (signed by the phone key)
+  async function publish(quick) {
+    if (!paired()) { toast('اربط الهاتف أولاً من الإعدادات'); w = clone(base); render(); return; }
+    const ch = changes();
+    if (!ch.length) { toast('لا توجد تغييرات'); return; }
+    if (!quick && !(await confirmBox('حفظ ونشر', '<b>سيتم نشر:</b><br>• ' + ch.map(esc).join('<br>• '), 'نشر'))) return;
+    const btn = quick ? null : $('bPublish');
+    busy(btn, true); toast('جارٍ النشر…', 15000);
+    try {
+      // the file must not have changed since it was read (another device / the PC)
+      const now = P.parseControl(await P.readGist(vault.gist, vault.token));
+      if (!now.ok || now.issued !== base.issued) {
+        toast('تغيّر ملف التحكم من جهاز آخر. أُعيدت قراءته؛ أعد التعديل.', 5000);
+        busy(btn, false); await load(); return;
+      }
+      w.message = (w.message || '').replace(/[\r\n]+/g, ' ').trim();
+      const raw = await P.buildControl(w, key);
+      await P.writeGist(vault.gist, vault.token, raw);
+      base = P.parseControl(raw); w = clone(base);
+      render();
+      toast('تم النشر ✓ يصل للمستخدمين خلال 20 دقيقة تقريباً', 4500);
+    } catch (e) {
+      toast('تعذر النشر: ' + ghMsg(e), 6000);
+    }
+    busy(btn, false);
+  }
+
+  // ---------------------------------------------------------------- start
+  if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => { })); }
+  if (!window.crypto || !window.crypto.subtle) {
+    document.body.innerHTML = '<div class="wrap center"><p class="ttl">يجب فتح التطبيق من رابط https</p></div>';
+  } else lock();
+})();
+</script>
+</body>
+</html>
