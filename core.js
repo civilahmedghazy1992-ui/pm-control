@@ -184,7 +184,32 @@
   }
   function addHours(h, from) { return fmt(new Date((from || new Date()).getTime() + h * 3600000)); }
 
+  // ---------------------------------------------------------------- the projects summary (executive view) written by the PC
+  // {k: RSA-OAEP-SHA1(phone key) of AES-256 key + HMAC key, iv, ct: AES-256-CBC, mac: HMAC-SHA256(iv|ct)}
+  async function decryptExec(privPkcs8, text) {
+    const o = JSON.parse(text);
+    const rk = await S.importKey('pkcs8', unb64(privPkcs8), { name: 'RSA-OAEP', hash: 'SHA-1' }, false, ['decrypt']);
+    const keys = new Uint8Array(await S.decrypt({ name: 'RSA-OAEP' }, rk, unb64(o.k)));
+    const iv = unb64(o.iv), ct = unb64(o.ct);
+    const mk = await S.importKey('raw', keys.slice(32, 64), { name: 'HMAC', hash: 'SHA-256' }, false, ['verify']);
+    const data = new Uint8Array(iv.length + ct.length); data.set(iv, 0); data.set(ct, iv.length);
+    if (!(await S.verify('HMAC', mk, unb64(o.mac), data))) throw new Error('البيانات غير سليمة (فشل التحقق)');
+    const ak = await S.importKey('raw', keys.slice(0, 32), { name: 'AES-CBC' }, false, ['decrypt']);
+    const pt = await S.decrypt({ name: 'AES-CBC', iv: iv }, ak, ct);
+    const j = JSON.parse(dec.decode(pt).replace(/^\uFEFF/, ''));
+    j._at = o.at;
+    return j;
+  }
+  async function readGistFile(id, token, name) {
+    const g = await gist('GET', id, token);
+    const f = g.files && g.files[name];
+    if (!f) return null;
+    let content = f.content;
+    if (f.truncated && f.raw_url) content = await (await fetch(f.raw_url, { cache: 'no-store' })).text();
+    return content;
+  }
+
   const PMCore = { b64, unb64, fmt, parseUntil, expired, addDays, newKey, importPriv, importPub, sign, verify, pairingCode,
-    seal, unseal, newSalt, hashPwd, readRequests, addHours, parseControl, buildControl, checkPhoneFile, readGist, writeGist, FILE };
+    seal, unseal, newSalt, hashPwd, decryptExec, readGistFile, readRequests, addHours, parseControl, buildControl, checkPhoneFile, readGist, writeGist, FILE };
   if (typeof module !== 'undefined' && module.exports) module.exports = PMCore; else root.PMCore = PMCore;
 })(typeof self !== 'undefined' ? self : globalThis);

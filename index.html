@@ -88,6 +88,22 @@ textarea.i{min-height:70px;resize:vertical}
 .spin{width:22px;height:22px;border:3px solid rgba(255,255,255,.25);border-top-color:var(--gold);border-radius:50%;animation:sp 0.8s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 .hidden{display:none!important}
+.seg{display:flex;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:4px;margin:0 0 14px}
+.seg button{flex:1;border:0;background:transparent;border-radius:10px;padding:10px;font-weight:700;color:var(--mute);cursor:pointer}
+.seg button.on{background:var(--gold);color:var(--gold-ink)}
+.kg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.kc{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px}
+.kt{font-size:12px;color:var(--mute)} .kv{font-size:22px;font-weight:800;margin-top:2px}
+.kv.bad{color:var(--bad)} .kv.ok{color:var(--ok)} .kv.warn{color:var(--warn)}
+.sbar{display:flex;height:16px;border-radius:8px;overflow:hidden;background:#0E2740}
+.lg{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;font-size:12px;color:var(--mute)} .lg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-inline-end:5px}
+h2.sec{font-size:15px;color:var(--mute);margin:18px 2px 10px}
+.pcard{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px;cursor:pointer}
+.ph{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px} .ph .n{font-weight:800}
+.pb{display:grid;grid-template-columns:52px 1fr 54px;align-items:center;gap:8px;font-size:12px;color:var(--mute);margin-top:6px}
+.pb b{color:var(--ink);text-align:left;direction:ltr} .tr{height:8px;background:#0E2740;border-radius:5px;overflow:hidden} .tr span{display:block;height:100%;border-radius:5px}
+.pf{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--mute);margin-top:8px} .pf b{color:var(--ink)} .neg{color:#ff9f98!important}
+.dr{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px} .dr span{color:var(--mute)} .dr b{text-align:left}
 .ib{position:relative}
 .ib .bd{position:absolute;top:-6px;left:-6px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:var(--bad);color:#fff;font-size:12px;font-weight:800;display:grid;place-items:center}
 .req{border:1px solid rgba(232,163,23,.45);background:rgba(232,163,23,.08);border-radius:12px;padding:12px;margin-top:10px}
@@ -143,6 +159,8 @@ a{color:var(--gold)}
     <button class="ib" id="bSettings" aria-label="الإعدادات"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
   </header>
   <main class="wrap" style="padding-top:4px">
+    <div class="seg"><button data-t="ctl" class="on">التحكم</button><button data-t="exec">المشاريع (الإدارة العليا)</button></div>
+    <div id="execBody" class="hidden"><div id="exBody"></div></div>
     <div id="banners"></div>
     <div id="loading" class="card tc hidden"><div class="spin" style="margin:6px auto"></div><div class="muted">جارٍ قراءة ملف التحكم…</div></div>
 
@@ -413,7 +431,7 @@ a{color:var(--gold)}
     busy($('lpGo'), false);
   }
   function lock() {
-    vault = null; pw = ''; key = null; base = null; w = null;
+    vault = null; pw = ''; key = null; base = null; w = null; ex = null;
     closeSheet(); $('pubBar').classList.remove('on');
     show(store(true) ? 'vLock' : 'vSetup');
     setTimeout(() => { const e = $('lp'); if (e && !$('vLock').classList.contains('hidden')) e.focus(); }, 80);
@@ -484,7 +502,93 @@ a{color:var(--gold)}
   };
 
   // ---------------------------------------------------------------- read the control file
-  $('bReload').onclick = () => load();
+  $('bReload').onclick = () => { if (tab === 'exec') { ex = null; loadExec(); } else load(); };
+  // ---------------------------------------------------------------- executive view (projects summary published by the PC)
+  let tab = 'ctl', ex = null, exCountry = 'الكل';
+  function setTab(t) {
+    tab = t;
+    document.querySelectorAll('.seg button').forEach((b) => b.classList.toggle('on', b.dataset.t === t));
+    $('homeBody').classList.toggle('hidden', t !== 'ctl' || !base);
+    $('execBody').classList.toggle('hidden', t !== 'exec');
+    if (t === 'exec') { $('pubBar').classList.remove('on'); if (!ex) loadExec(); } else pending();
+    window.scrollTo(0, 0);
+  }
+  document.querySelectorAll('.seg button').forEach((b) => b.onclick = () => setTab(b.dataset.t));
+  async function loadExec() {
+    poke();
+    $('exBody').innerHTML = '<div class="card tc"><div class="spin" style="margin:6px auto"></div><div class="muted">جارٍ قراءة بيانات المشاريع…</div></div>';
+    try {
+      const t = await P.readGistFile(vault.gist, vault.token, 'ProjectMonitor_exec.json');
+      if (!t) { $('exBody').innerHTML = '<div class="banner warn">لم تُنشر بيانات المشاريع بعد. على جهاز المسؤول في Excel: زر <b>«نشر للهاتف»</b> (أو «تحديث»)، ثم اضغط تحديث هنا.</div>'; return; }
+      ex = await P.decryptExec(vault.priv, t);
+      renderExec();
+    } catch (e) {
+      $('exBody').innerHTML = '<div class="banner bad">تعذرت قراءة بيانات المشاريع: ' + esc(e.message || e) + '<br>إن كنت ربطت هاتفاً جديداً: اضغط «نشر للهاتف» في Excel مرة أخرى.</div>';
+    }
+  }
+  const pc = (v) => { if (v === null || v === undefined || v === '') return null; v = +v; if (isNaN(v)) return null; return Math.abs(v) <= 1.5 ? v * 100 : v; };
+  const fpc = (v) => { const p = pc(v); return p === null ? '—' : p.toFixed(1) + '%'; };
+  function money(v) {
+    if (v === null || v === undefined || v === '' || isNaN(+v)) return '—';
+    v = +v; const a = Math.abs(v);
+    if (a >= 1e9) return (v / 1e9).toFixed(2) + ' مليار';
+    if (a >= 1e6) return (v / 1e6).toFixed(1) + ' مليون';
+    return Math.round(v).toLocaleString('en-US');
+  }
+  function running(p) { return p.state !== 'متوقف' && p.state !== 'منتهي'; }
+  function timeCls(t) { return t === 'متأخر' ? 'bad' : (t === 'متقدم' ? 'ok' : (t === 'حسب الخطة' ? 'ok' : 'warn')); }
+  function renderExec() {
+    const all = ex.projects || [];
+    const countries = ['الكل'].concat(Array.from(new Set(all.map((p) => p.country).filter(Boolean))));
+    if (countries.indexOf(exCountry) < 0) exCountry = 'الكل';
+    const ps = all.filter((p) => exCountry === 'الكل' || p.country === exCountry);
+    const run = ps.filter(running);
+    const cnt = (t) => run.filter((p) => p.time === t).length;
+    const late = cnt('متأخر'), onp = cnt('حسب الخطة'), ahead = cnt('متقدم'), noup = run.length - late - onp - ahead;
+    const sum = (k) => ps.reduce((a, p) => a + (+p[k] || 0), 0);
+    const val = sum('valueEGP'), inv = sum('invEGP'), obs = ps.reduce((a, p) => a + (+p.obstacles || 0), 0);
+    const k = ex.kpi || {};
+    const bar = (n, c) => run.length ? '<span style="flex:' + n + ';background:' + c + '"></span>' : '';
+    let h = '<div class="muted tc" style="margin-bottom:10px">آخر نشر من الأداة: ' + esc(ex.at || ex._at || '') + (ex.file ? ' — ' + esc(ex.file) : '') + '</div>';
+    h += '<div class="chips" style="margin-bottom:12px">' + countries.map((c) => '<button class="chip' + (c === exCountry ? ' on' : '') + '" data-c="' + esc(c) + '">' + esc(c) + '</button>').join('') + '</div>';
+    h += '<div class="kg">' +
+      kc('المشاريع القائمة', run.length, '') + kc('متأخرة', late, 'bad') + kc('حسب الخطة', onp, 'ok') + kc('متقدمة', ahead, 'ok') +
+      kc('قيمة المشاريع (ج.م)', money(val), '') + kc('المستخلصات (ج.م)', money(inv), '') +
+      kc('المنصرف من العقود', val ? (inv / val * 100).toFixed(1) + '%' : '—', '') + kc('المعوقات المسجلة', obs, obs ? 'warn' : '') +
+      kc('نسبة الفوز بالتندر (خلال عام)', fpc(k.winYear), 'ok') + kc('أُسندت (خلال عام)', k.awardedYear == null ? '—' : k.awardedYear, '') + '</div>';
+    if (run.length) h += '<div class="card"><h2>الموقف الزمني للمشاريع القائمة</h2><div class="sbar">' + bar(late, 'var(--bad)') + bar(onp, 'var(--ok)') + bar(ahead, '#4fa3e0') + bar(noup, '#7d8fa3') + '</div>' +
+      '<div class="lg"><span><i style="background:var(--bad)"></i>متأخر ' + late + '</span><span><i style="background:var(--ok)"></i>حسب الخطة ' + onp + '</span><span><i style="background:#4fa3e0"></i>متقدم ' + ahead + '</span><span><i style="background:#7d8fa3"></i>بدون تحديث ' + noup + '</span></div></div>';
+    const order = { 'متأخر': 0, 'بانتظار البيانات': 1, 'حسب الخطة': 2, 'متقدم': 3 };
+    const sorted = ps.slice().sort((a, b) => (running(b) - running(a)) || ((order[a.time] ?? 1) - (order[b.time] ?? 1)) || ((+b.delay || 0) - (+a.delay || 0)));
+    h += '<h2 class="sec">المشاريع (' + ps.length + ')</h2>' + sorted.map((p) => {
+      const i = all.indexOf(p), pl = pc(p.planned), ac = pc(p.actual), ip = pc(p.invPct);
+      return '<div class="pcard" data-i="' + i + '"><div class="ph"><div class="grow"><div class="n">' + esc(p.name) + '</div><div class="u muted">' + esc([p.code, p.country, p.state].filter(Boolean).join(' • ')) + '</div></div>' +
+        '<span class="b ' + timeCls(p.time) + '">' + esc(p.time || '—') + '</span></div>' +
+        '<div class="pb"><label>المخطط</label><div class="tr"><span style="width:' + Math.min(100, pl || 0) + '%;background:#7d8fa3"></span></div><b>' + fpc(p.planned) + '</b></div>' +
+        '<div class="pb"><label>الفعلي</label><div class="tr"><span style="width:' + Math.min(100, ac || 0) + '%;background:' + (p.time === 'متأخر' ? 'var(--bad)' : 'var(--ok)') + '"></span></div><b>' + fpc(p.actual) + '</b></div>' +
+        '<div class="pf"><span>الانحراف <b class="' + ((pc(p.variance) || 0) < 0 ? 'neg' : '') + '">' + fpc(p.variance) + '</b></span><span>الإنهاء المتوقع <b>' + esc(p.expFinish || '—') + '</b></span>' +
+        ((+p.delay || 0) > 0 ? '<span>تأخير <b class="neg">' + Math.round(+p.delay) + ' يوم</b></span>' : '') + '</div>' +
+        '<div class="pf"><span>العقد <b>' + money(p.valueLocal || p.valueEGP) + ' ' + esc(p.cur || '') + '</b></span><span>المستخلصات <b>' + (ip === null ? '—' : ip.toFixed(1) + '%') + '</b></span>' + ((+p.obstacles || 0) > 0 ? '<span>معوقات <b class="neg">' + (+p.obstacles) + '</b></span>' : '') + '</div></div>';
+    }).join('');
+    h += '<p class="foot">Created by Planner Ahmed Ghazy</p>';
+    $('exBody').innerHTML = h;
+    $('exBody').querySelectorAll('.chip[data-c]').forEach((b) => b.onclick = () => { exCountry = b.dataset.c; renderExec(); });
+    $('exBody').querySelectorAll('.pcard').forEach((c) => c.onclick = () => projSheet(all[+c.dataset.i]));
+  }
+  function kc(t, v, cls) { return '<div class="kc"><div class="kt">' + esc(t) + '</div><div class="kv ' + cls + '">' + esc(v) + '</div></div>'; }
+  function projSheet(p) {
+    const row = (a, b) => (b === null || b === undefined || b === '' ? '' : '<div class="dr"><span>' + esc(a) + '</span><b>' + esc(b) + '</b></div>');
+    sheet('<h3>' + esc(p.name) + '</h3><p class="muted">' + esc([p.code, p.country, p.site].filter(Boolean).join(' • ')) + '</p>' +
+      row('حالة المشروع', p.state) + row('الموقف الزمني', p.time) + row('المالك', p.owner) + row('الاستشاري', p.consultant) + row('مدير المشروع', p.pm) +
+      row('بداية البيزلاين', p.blStart) + row('نهاية البيزلاين', p.blFinish) + row('الإنهاء المتوقع', p.expFinish) + row('تأخير الإنهاء (يوم)', p.delay == null ? null : Math.round(+p.delay)) +
+      row('المخطط', fpc(p.planned)) + row('الفعلي', fpc(p.actual)) + row('الانحراف', fpc(p.variance)) + row('SPI', p.spi == null ? null : (+p.spi).toFixed(2)) +
+      row('الأنشطة الحرجة', p.critical) + row('تاريخ آخر تحديث', p.updated) +
+      row('قيمة العقد', money(p.valueLocal || p.valueEGP) + ' ' + (p.cur || '')) + row('قيمة العقد (ج.م)', money(p.valueEGP)) +
+      row('آخر مستخلص', money(p.lastInv)) + row('شهر آخر مستخلص', p.lastInvMonth) + row('المستخلصات التراكمية', money(p.invCum)) + row('% من العقد', fpc(p.invPct)) +
+      row('المعوقات', p.obstacles) + row('الإجراءات التصحيحية', p.actions) + row('النطاق', p.scope) +
+      '<button class="btn mt" id="psClose">إغلاق</button>', (s) => { s.querySelector('#psClose').onclick = closeSheet; });
+  }
+
   async function load() {
     poke();
     $('loading').classList.remove('hidden'); $('homeBody').classList.add('hidden'); $('banners').innerHTML = '';
@@ -494,7 +598,7 @@ a{color:var(--gold)}
       if (!c.ok) throw new Error('ملف التحكم غير صالح: ' + c.why);
       base = c; w = clone(c);
       render();
-      $('homeBody').classList.remove('hidden');
+      $('homeBody').classList.toggle('hidden', tab !== 'ctl');
       pollReqs(); clearInterval(reqT); reqT = setInterval(() => { if (vault && !document.hidden) pollReqs(); }, 60000);
     } catch (e) {
       $('banners').innerHTML = '<div class="banner bad">تعذرت قراءة ملف التحكم: ' + esc(ghMsg(e)) + '<br><button class="btn mt" id="bRetry">إعادة المحاولة</button></div>';
@@ -569,7 +673,7 @@ a{color:var(--gold)}
   }
   function pending() {
     const ch = changes();
-    $('pubBar').classList.toggle('on', ch.length > 0);
+    $('pubBar').classList.toggle('on', ch.length > 0 && tab === 'ctl');
     $('pubCnt').textContent = ch.length ? ch.length + ' تغيير بانتظار النشر: ' + ch.slice(0, 3).join('، ') + (ch.length > 3 ? '…' : '') : '';
   }
 
