@@ -94,7 +94,7 @@ textarea.i{min-height:70px;resize:vertical}
 .kg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
 .kc{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px}
 .kt{font-size:12px;color:var(--mute)} .kv{font-size:22px;font-weight:800;margin-top:2px}
-.kv.bad{color:var(--bad)} .kv.ok{color:var(--ok)} .kv.warn{color:var(--warn)}
+.kv.sm{font-size:15px;line-height:1.5} .kv.bad{color:var(--bad)} .kv.ok{color:var(--ok)} .kv.warn{color:var(--warn)}
 .sbar{display:flex;height:16px;border-radius:8px;overflow:hidden;background:#0E2740}
 .lg{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;font-size:12px;color:var(--mute)} .lg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-inline-end:5px}
 h2.sec{font-size:15px;color:var(--mute);margin:18px 2px 10px}
@@ -111,6 +111,15 @@ h2.sec{font-size:15px;color:var(--mute);margin:18px 2px 10px}
 .opt b{display:block}.opt span{font-size:12px;color:var(--mute)}
 .opt.on{border-color:var(--gold);background:rgba(232,163,23,.14)}
 .b.inp{background:rgba(120,170,220,.16);color:#9cc7f0}
+.mb{display:flex;align-items:flex-end;gap:4px;height:120px;padding-top:6px}
+.mb .c{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0}
+.mb .c .s{width:100%;max-width:22px;border-radius:4px 4px 0 0;background:#4fa3e0;position:relative}
+.mb .c .s i{position:absolute;bottom:0;left:0;right:0;background:var(--ok);border-radius:4px 4px 0 0}
+.mb .c em{font-style:normal;font-size:10px;color:var(--mute);margin-top:4px;white-space:nowrap}
+.mb .c b{font-size:10px;color:var(--ink);margin-bottom:2px}
+.hb{display:grid;grid-template-columns:minmax(0,1fr) 90px 34px;gap:8px;align-items:center;font-size:13px;margin-top:8px}
+.hb .tr{height:10px} .hb b{text-align:left}
+.srch{width:100%;margin-bottom:10px}
 .steps{margin:0;padding-inline-start:20px;font-size:14px}
 .steps li{margin-bottom:6px}
 a{color:var(--gold)}
@@ -159,8 +168,9 @@ a{color:var(--gold)}
     <button class="ib" id="bSettings" aria-label="الإعدادات"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
   </header>
   <main class="wrap" style="padding-top:4px">
-    <div class="seg"><button data-t="ctl" class="on">التحكم</button><button data-t="exec">المشاريع (الإدارة العليا)</button></div>
+    <div class="seg"><button data-t="ctl" class="on">التحكم</button><button data-t="exec">المشاريع (الإدارة العليا)</button><button data-t="ten">التندر</button></div>
     <div id="execBody" class="hidden"><div id="exBody"></div></div>
+    <div id="tenBody" class="hidden"><div id="tnBody"></div></div>
     <div id="banners"></div>
     <div id="loading" class="card tc hidden"><div class="spin" style="margin:6px auto"></div><div class="muted">جارٍ قراءة ملف التحكم…</div></div>
 
@@ -502,7 +512,7 @@ a{color:var(--gold)}
   };
 
   // ---------------------------------------------------------------- read the control file
-  $('bReload').onclick = () => { if (tab === 'exec') { ex = null; loadExec(); } else load(); };
+  $('bReload').onclick = () => { if (tab === 'exec' || tab === 'ten') { ex = null; loadExec(); } else load(); };
   // ---------------------------------------------------------------- executive view (projects summary published by the PC)
   let tab = 'ctl', ex = null, exCountry = 'الكل';
   function setTab(t) {
@@ -510,20 +520,22 @@ a{color:var(--gold)}
     document.querySelectorAll('.seg button').forEach((b) => b.classList.toggle('on', b.dataset.t === t));
     $('homeBody').classList.toggle('hidden', t !== 'ctl' || !base);
     $('execBody').classList.toggle('hidden', t !== 'exec');
-    if (t === 'exec') { $('pubBar').classList.remove('on'); if (!ex) loadExec(); } else pending();
+    $('tenBody').classList.toggle('hidden', t !== 'ten');
+    if (t === 'exec' || t === 'ten') { $('pubBar').classList.remove('on'); if (!ex) loadExec(); else if (t === 'ten') renderTen(); else renderExec(); } else pending();
     window.scrollTo(0, 0);
   }
   document.querySelectorAll('.seg button').forEach((b) => b.onclick = () => setTab(b.dataset.t));
   async function loadExec() {
     poke();
-    $('exBody').innerHTML = '<div class="card tc"><div class="spin" style="margin:6px auto"></div><div class="muted">جارٍ قراءة بيانات المشاريع…</div></div>';
+    const box = () => $(tab === 'ten' ? 'tnBody' : 'exBody');
+    box().innerHTML = '<div class="card tc"><div class="spin" style="margin:6px auto"></div><div class="muted">جارٍ قراءة بيانات المشاريع…</div></div>';
     try {
       const t = await P.readGistFile(vault.gist, vault.token, 'ProjectMonitor_exec.json');
-      if (!t) { $('exBody').innerHTML = '<div class="banner warn">لم تُنشر بيانات المشاريع بعد. على جهاز المسؤول في Excel: زر <b>«نشر للهاتف»</b> (أو «تحديث»)، ثم اضغط تحديث هنا.</div>'; return; }
+      if (!t) { box().innerHTML = '<div class="banner warn">لم تُنشر بيانات المشاريع بعد. على جهاز المسؤول في Excel: زر <b>«نشر للهاتف»</b> (أو «تحديث»)، ثم اضغط تحديث هنا.</div>'; return; }
       ex = await P.decryptExec(vault.priv, t);
-      renderExec();
+      renderExec(); renderTen();
     } catch (e) {
-      $('exBody').innerHTML = '<div class="banner bad">تعذرت قراءة بيانات المشاريع: ' + esc(e.message || e) + '<br>إن كنت ربطت هاتفاً جديداً: اضغط «نشر للهاتف» في Excel مرة أخرى.</div>';
+      box().innerHTML = '<div class="banner bad">تعذرت قراءة بيانات المشاريع: ' + esc(e.message || e) + '<br>إن كنت ربطت هاتفاً جديداً: اضغط «نشر للهاتف» في Excel مرة أخرى.</div>';
     }
   }
   const pc = (v) => { if (v === null || v === undefined || v === '') return null; v = +v; if (isNaN(v)) return null; return Math.abs(v) <= 1.5 ? v * 100 : v; };
@@ -574,6 +586,83 @@ a{color:var(--gold)}
     $('exBody').innerHTML = h;
     $('exBody').querySelectorAll('.chip[data-c]').forEach((b) => b.onclick = () => { exCountry = b.dataset.c; renderExec(); });
     $('exBody').querySelectorAll('.pcard').forEach((c) => c.onclick = () => projSheet(all[+c.dataset.i]));
+  }
+  // ---------------------------------------------------------------- tender summary (published with the projects)
+  let tnCountry = 'الكل', tnPeriod = 'y', tnQ = '', tnShow = 30;
+  const tAw = (t) => (t.aw === 'نعم' ? 'yes' : (t.aw === 'لا' ? 'no' : 'tbd'));
+  const tDate = (t) => { const v = t.m || t.sd; if (!v) return null; const d = new Date(String(v).slice(0, 10)); return isNaN(d) ? null : d; };
+  const ym = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+  const MN = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+  function renderTen() {
+    if (!ex) return;
+    const all = ex.tenders || [];
+    if (!all.length) { $('tnBody').innerHTML = '<div class="banner warn">لا توجد بيانات تندر في آخر نشر. على جهاز المسؤول في Excel اضغط <b>«نشر للهاتف»</b> (بعد تثبيت آخر نسخة)، ثم اضغط تحديث هنا.</div>'; return; }
+    const countries = ['الكل'].concat(Array.from(new Set(all.map((t) => t.ct).filter(Boolean))));
+    if (countries.indexOf(tnCountry) < 0) tnCountry = 'الكل';
+    const now = new Date(), yAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+    const inPer = (t) => { if (tnPeriod === 'all') return true; const d = tDate(t); if (!d) return false; return tnPeriod === 'y' ? (d > yAgo && d <= now) : d.getFullYear() === now.getFullYear(); };
+    const byC = all.filter((t) => tnCountry === 'الكل' || t.ct === tnCountry);
+    const ts = byC.filter(inPer);
+    const yes = ts.filter((t) => tAw(t) === 'yes').length, no = ts.filter((t) => tAw(t) === 'no').length, tbd = ts.length - yes - no;
+    // cost by currency (studies of the period)
+    const cur = {}; ts.forEach((t) => { if (+t.c > 0) { const k = t.cur || 'ج.م'; cur[k] = (cur[k] || 0) + (+t.c); } });
+    const curTxt = Object.keys(cur).sort((a, b) => cur[b] - cur[a]).slice(0, 3).map((k) => money(cur[k]) + ' ' + k);
+    const curAw = {}; ts.filter((t) => tAw(t) === 'yes').forEach((t) => { if (+t.c > 0) { const k = t.cur || 'ج.م'; curAw[k] = (curAw[k] || 0) + (+t.c); } });
+    const awTxt = Object.keys(curAw).sort((a, b) => curAw[b] - curAw[a]).slice(0, 2).map((k) => money(curAw[k]) + ' ' + k);
+    const perTxt = { y: 'خلال عام', yr: 'هذه السنة', all: 'الكل' };
+    let h = '<div class="muted tc" style="margin-bottom:10px">آخر نشر من الأداة: ' + esc(ex.at || ex._at || '') + '</div>';
+    h += '<div class="chips" style="margin-bottom:8px">' + countries.map((c) => '<button class="chip' + (c === tnCountry ? ' on' : '') + '" data-c="' + esc(c) + '">' + esc(c) + '</button>').join('') + '</div>';
+    h += '<div class="chips" style="margin-bottom:12px">' + Object.keys(perTxt).map((p) => '<button class="chip' + (p === tnPeriod ? ' on' : '') + '" data-p="' + p + '">' + perTxt[p] + '</button>').join('') + '</div>';
+    h += '<div class="kg">' +
+      kc('عدد التندرات (' + perTxt[tnPeriod] + ')', ts.length, '') + kc('أُسندت للغرابلي', yes, 'ok') +
+      kc('نسبة الفوز', ts.length ? (yes / ts.length * 100).toFixed(1) + '%' : '—', 'ok') + kc('لم تُسند', no, no ? 'bad' : '') +
+      kc('لم يُحدد بعد', tbd, tbd ? 'warn' : '') + kc('قيمة المُسند', awTxt.join(' + ') || '—', 'sm') + '</div>';
+    if (curTxt.length) h += '<div class="card"><h2>إجمالي قيمة الدراسات (' + perTxt[tnPeriod] + ')</h2>' + curTxt.map((x) => '<div class="dr"><b style="text-align:right">' + esc(x) + '</b></div>').join('') + '</div>';
+    if (ts.length) h += '<div class="card"><h2>نتيجة التندرات</h2><div class="sbar">' + (yes ? '<span style="flex:' + yes + ';background:var(--ok)"></span>' : '') + (tbd ? '<span style="flex:' + tbd + ';background:#7d8fa3"></span>' : '') + (no ? '<span style="flex:' + no + ';background:var(--bad)"></span>' : '') + '</div>' +
+      '<div class="lg"><span><i style="background:var(--ok)"></i>أُسندت ' + yes + '</span><span><i style="background:#7d8fa3"></i>لم يُحدد ' + tbd + '</span><span><i style="background:var(--bad)"></i>لم تُسند ' + no + '</span></div></div>';
+    // the last 12 months: studies submitted (blue) and awarded (green)
+    const months = []; for (let i = 11; i >= 0; i--) { const d = new Date(now.getFullYear(), now.getMonth() - i, 1); months.push({ k: ym(d), l: MN[d.getMonth()].slice(0, 3), n: 0, a: 0 }); }
+    byC.forEach((t) => { const d = tDate(t); if (!d) return; const m = months.find((x) => x.k === ym(d)); if (m) { m.n++; if (tAw(t) === 'yes') m.a++; } });
+    const mx = Math.max(1, ...months.map((m) => m.n));
+    h += '<div class="card"><h2>التندرات شهرياً (آخر 12 شهر)</h2><div class="mb">' + months.map((m) => '<div class="c"><b>' + (m.n || '') + '</b><div class="s" style="height:' + (m.n / mx * 88) + '%">' + (m.a ? '<i style="height:' + (m.a / m.n * 100) + '%"></i>' : '') + '</div><em>' + m.l + '</em></div>').join('') + '</div>' +
+      '<div class="lg"><span><i style="background:#4fa3e0"></i>مُقدَّم</span><span><i style="background:var(--ok)"></i>أُسند</span></div></div>';
+    // by scope and by client
+    const top = (key, title) => {
+      const g = {}; ts.forEach((t) => { const k = (t[key] || '').trim() || 'غير محدد'; g[k] = g[k] || { n: 0, a: 0 }; g[k].n++; if (tAw(t) === 'yes') g[k].a++; });
+      const ks = Object.keys(g).sort((a, b) => g[b].n - g[a].n).slice(0, 6); if (!ks.length) return '';
+      const m = g[ks[0]].n;
+      return '<div class="card"><h2>' + title + '</h2>' + ks.map((k) => '<div class="hb"><span>' + esc(k) + '</span><div class="tr"><span style="width:' + (g[k].n / m * 100) + '%;background:#4fa3e0"></span></div><b>' + g[k].n + (g[k].a ? ' <small style="color:var(--ok)">(' + g[k].a + ')</small>' : '') + '</b></div>').join('') + '</div>';
+    };
+    h += top('sc', 'حسب نطاق المشروع') + top('cl', 'حسب الجهة المقدم إليها');
+    // list: the newest first, search by name / client
+    const q = tnQ.trim().toLowerCase();
+    const list = byC.filter((t) => (q ? ((t.n || '') + ' ' + (t.cl || '')).toLowerCase().indexOf(q) >= 0 : inPer(t)))
+      .sort((a, b) => ((tDate(b) || 0) - (tDate(a) || 0)));
+    h += '<h2 class="sec">التندرات (' + list.length + ')</h2><input class="i srch" id="tnQ" placeholder="بحث باسم المشروع أو الجهة" value="' + esc(tnQ) + '">';
+    const badge = (t) => { const a = tAw(t); return '<span class="b ' + (a === 'yes' ? 'ok' : (a === 'no' ? 'bad' : 'warn')) + '">' + (a === 'yes' ? 'أُسندت' : (a === 'no' ? 'لم تُسند' : 'لم يُحدد')) + '</span>'; };
+    h += '<div id="tnList">' + list.slice(0, tnShow).map((t) => {
+      const d = tDate(t);
+      return '<div class="pcard" data-i="' + all.indexOf(t) + '"><div class="ph"><div class="grow"><div class="n">' + esc(t.n) + '</div><div class="u muted">' + esc([t.cl, d ? MN[d.getMonth()] + ' ' + d.getFullYear() : '', t.ct].filter(Boolean).join(' • ')) + '</div></div>' + badge(t) + '</div>' +
+        '<div class="pf">' + (+t.c > 0 ? '<span>التكلفة <b>' + money(t.c) + ' ' + esc(t.cur || '') + '</b></span>' : '') + (+t.d > 0 ? '<span>المدة <b>' + (+t.d) + ' ' + esc(t.du || '') + '</b></span>' : '') + (t.sc ? '<span>النطاق <b>' + esc(t.sc) + '</b></span>' : '') + '</div></div>';
+    }).join('') + '</div>';
+    if (list.length > tnShow) h += '<button class="btn ghost" id="tnMore">عرض المزيد (' + (list.length - tnShow) + ')</button>';
+    h += '<p class="foot">Created by Planner Ahmed Ghazy</p>';
+    $('tnBody').innerHTML = h;
+    $('tnBody').querySelectorAll('.chip[data-c]').forEach((b) => b.onclick = () => { tnCountry = b.dataset.c; tnShow = 30; renderTen(); });
+    $('tnBody').querySelectorAll('.chip[data-p]').forEach((b) => b.onclick = () => { tnPeriod = b.dataset.p; tnShow = 30; renderTen(); });
+    $('tnBody').querySelectorAll('.pcard').forEach((c) => c.onclick = () => tenSheet(all[+c.dataset.i]));
+    const qi = $('tnQ'); let qt = null;
+    qi.oninput = () => { clearTimeout(qt); qt = setTimeout(() => { tnQ = qi.value; tnShow = 30; renderTen(); const n = $('tnQ'); n.focus(); n.setSelectionRange(n.value.length, n.value.length); }, 350); };
+    if ($('tnMore')) $('tnMore').onclick = () => { tnShow += 50; renderTen(); };
+  }
+  function tenSheet(t) {
+    const row = (a, b) => (b === null || b === undefined || b === '' ? '' : '<div class="dr"><span>' + esc(a) + '</span><b>' + esc(b) + '</b></div>');
+    const d = tDate(t);
+    sheet('<h3>' + esc(t.n) + '</h3><p class="muted">' + esc([t.cl, t.ct].filter(Boolean).join(' • ')) + '</p>' +
+      row('تم الإسناد لشركة الغرابلي؟', t.aw) + row('الجهة المقدم إليها', t.cl) + row('شهر الدراسة والتقديم', d ? MN[d.getMonth()] + ' ' + d.getFullYear() : null) +
+      row('تاريخ التقديم', t.sd) + row('نطاق المشروع', t.sc) + row('التكلفة', +t.c > 0 ? money(t.c) + ' ' + (t.cur || '') : null) +
+      row('المدة', +t.d > 0 ? (+t.d) + ' ' + (t.du || '') : null) + row('عدد إصدارات الدراسة', t.v) + row('الدولة', t.ct) + row('ملاحظات', t.note) +
+      '<button class="btn mt" id="tsClose">إغلاق</button>', (s) => { s.querySelector('#tsClose').onclick = closeSheet; });
   }
   function kc(t, v, cls) { return '<div class="kc"><div class="kt">' + esc(t) + '</div><div class="kv ' + cls + '">' + esc(v) + '</div></div>'; }
   function projSheet(p) {
