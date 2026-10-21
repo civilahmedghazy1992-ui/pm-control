@@ -196,7 +196,10 @@
     if (!(await S.verify('HMAC', mk, unb64(o.mac), data))) throw new Error('البيانات غير سليمة (فشل التحقق)');
     const ak = await S.importKey('raw', keys.slice(0, 32), { name: 'AES-CBC' }, false, ['decrypt']);
     const pt = await S.decrypt({ name: 'AES-CBC', iv: iv }, ak, ct);
-    const j = JSON.parse(dec.decode(pt).replace(/^\uFEFF/, ''));
+    const txt = dec.decode(pt).replace(/^\uFEFF/, '');
+    let j;
+    // older versions of the tool wrote 0.45 as .45 (not valid JSON): add the missing zero and read again
+    try { j = JSON.parse(txt); } catch (e) { j = JSON.parse(txt.replace(/([:,\[]\s*)(-?)\.(\d)/g, '$1$20.$3')); }
     j._at = o.at;
     return j;
   }
